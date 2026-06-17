@@ -57,6 +57,13 @@ def load_lstm_model():
     with open(config_path) as f:
         config = json.load(f)
 
+    # Fix: remove shared_object_id from Orthogonal initializers
+    for layer in config["config"]["layers"]:
+        for key in ["kernel_initializer", "recurrent_initializer", "bias_initializer"]:
+            init = layer["config"].get(key)
+            if init and isinstance(init, dict):
+                init.pop("shared_object_id", None)
+
     _lstm_model = keras.models.model_from_json(json.dumps(config))
     _lstm_model.load_weights(weights_path)
     print("[LSTM] Hypotension model loaded OK")
